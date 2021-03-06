@@ -14,6 +14,39 @@ export default class CreateRoomPage extends Component {
   defaultvotes = 2;
   constructor(props) {
     super(props);
+    this.state = {
+      guestCanPause: true,
+      votesToSkip: this.defaultvotes,
+    };
+    this.handleRoomButtonPressed = this.handleRoomButtonPressed.bind(this);
+    this.handleVotesChange = this.handleVotesChange.bind(this);
+    this.handleGuestCanPauseChange = this.handleGuestCanPauseChange.bind(this);
+  }
+
+  handleVotesChange(e) {
+    this.setState({
+      votesToSkip: e.target.value,
+    });
+  }
+
+  handleGuestCanPauseChange(e) {
+    this.setState({
+      guestCanPause: e.target.value === "true" ? true : false,
+    });
+  }
+
+  handleRoomButtonPressed() {
+    const requestOption = {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        votes_to_skip: this.state.votesToSkip,
+        guest_can_pause: this.state.guestCanPause,
+      }),
+    };
+    fetch("/api/create-room", requestOption)
+      .then((response) => response.json())
+      .then((data) => this.props.history.push('/room/' + data.code));
   }
 
   render() {
@@ -29,7 +62,11 @@ export default class CreateRoomPage extends Component {
             <FormHelperText>
               <div align="center">Guest Control Playback State</div>
             </FormHelperText>
-            <RadioGroup row defaultValue="true">
+            <RadioGroup
+              row
+              defaultValue="true"
+              onChange={this.handleGuestCanPauseChange}
+            >
               <FormControlLabel
                 value="true"
                 control={<Radio color="primary" />}
@@ -50,6 +87,7 @@ export default class CreateRoomPage extends Component {
             <TextField
               required={true}
               type="number"
+              onChange={this.handleVotesChange}
               defaultValue={this.defaultvotes}
               inputProps={{
                 min: 1,
@@ -64,7 +102,11 @@ export default class CreateRoomPage extends Component {
           </FormControl>
         </Grid>
         <Grid item xs={12} align="center">
-          <Button color="primary" variant="contained">
+          <Button
+            color="primary"
+            variant="contained"
+            onClick={this.handleRoomButtonPressed}
+          >
             Create A Room
           </Button>
         </Grid>
